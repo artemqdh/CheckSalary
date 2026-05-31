@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +40,13 @@ builder.Services.AddMassTransit(x =>
         });
     });
 });
+
+builder.Services.AddOpenTelemetry()
+    .WithTracing(t => t
+        .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("CheckSalary"))
+        .AddAspNetCoreInstrumentation()
+        .AddSource("MassTransit")
+        .AddOtlpExporter(o => o.Endpoint = new Uri("http://localhost:4317")));
 
 // Redis
 builder.Services.AddStackExchangeRedisCache(options =>
