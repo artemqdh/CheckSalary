@@ -1,0 +1,6 @@
+@CheckSalary_HostAddress = http://localhost:5067
+
+GET {{CheckSalary_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

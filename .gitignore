@@ -1,0 +1,27 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+.vs/
+*.DotSettings.user
+
+# Node
+node_modules/
+dist/
+
+# Environment
+.env
+appsettings.Development.json
+appsettings.*.local.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+pgdata/
+
+# Rider
+.idea/
