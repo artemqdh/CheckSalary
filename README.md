@@ -114,7 +114,7 @@ The app works without Ollama — uncheck "Use AI" to use exact stack names.
 
 ## 📁 Project Structure
 
-\`\`\`
+```
 CheckSalary/
 ├── CheckSalary.Domain/          # Entities, Interfaces, Domain Events
 ├── CheckSalary.Application/     # DTOs, Service Interfaces, Use Cases
@@ -122,8 +122,9 @@ CheckSalary/
 ├── CheckSalary.Api/             # Controllers, Middleware, Program.cs
 ├── CheckSalary.Tests/           # xUnit Unit Tests
 ├── frontend/                    # React + TypeScript + Tailwind + Leaflet
-└── docker-compose.yml           # PostgreSQL, Redis, RabbitMQ, Jaeger
-\`\`\`
+├── docker-compose.yml           # PostgreSQL, Redis, RabbitMQ, Jaeger
+└── README.md
+```
 
 ---
 
