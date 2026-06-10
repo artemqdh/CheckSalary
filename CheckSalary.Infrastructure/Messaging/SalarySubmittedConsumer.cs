@@ -22,21 +22,20 @@ public class SalarySubmittedConsumer : IConsumer<SalarySubmittedEvent>
     {
         var message = context.Message;
 
-        // Get all entries for this city + stack
         var salaries = await _context.SalaryEntries
-            .Where(e => e.City == message.City && e.StackRaw == message.StackRaw)
+            .Where(e => e.City == message.City && e.StackRaw == message.StackRaw && e.Level == message.Level)
             .ToListAsync();
 
         if (salaries.Count == 0) return;
 
         var average = salaries.Average(s => s.Amount);
 
-        // Find existing CityAverage or create new
-        var cityAverage = await _context.CityAverages.FirstOrDefaultAsync(ca => ca.City == message.City && ca.Stack == message.StackRaw);
-
+        var cityAverage = await _context.CityAverages
+            .FirstOrDefaultAsync(ca => ca.City == message.City && ca.Stack == message.StackRaw && ca.Level == message.Level);
+        
         if (cityAverage is null)
         {
-            cityAverage = new CityAverage(message.City, message.StackRaw, average, salaries.Count);
+            cityAverage = new CityAverage(message.City, message.StackRaw, message.Level, average, salaries.Count);
             _context.CityAverages.Add(cityAverage);
         }
         else
@@ -45,7 +44,7 @@ public class SalarySubmittedConsumer : IConsumer<SalarySubmittedEvent>
         }
 
         await _context.SaveChangesAsync();
-        await _cache.SetCachedAverageAsync(message.City, message.StackRaw, average);
+        await _cache.SetCachedAverageAsync($"{message.City}:{message.Level}", message.StackRaw, average);
 
         Console.WriteLine($"Updated average for {message.StackRaw} in {message.City}: {average:C} ({salaries.Count} samples)");
     }

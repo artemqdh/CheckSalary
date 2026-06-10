@@ -27,11 +27,12 @@ public class AnalyticsConsumerTests
         var cacheMock = new Mock<ICacheService>();
         var consumer = new SalarySubmittedConsumer(context, cacheMock.Object);
 
-        var salaryEntry = new SalaryEntry("C#", 100000, "Berlin", 52.52, 13.40);
+        var salaryEntry = new SalaryEntry("C#", 100000, "Berlin", 52.52, 13.40, "Middle");
         await context.SalaryEntries.AddAsync(salaryEntry);
         await context.SaveChangesAsync();
 
-        var message = new SalarySubmittedEvent(salaryEntry.Id, "C#", 100000, "Berlin", DateTime.UtcNow);
+        var message = new SalarySubmittedEvent(salaryEntry.Id, "C#", 100000, "Berlin", "Middle", DateTime.UtcNow);
+        
         var consumeContext = new Mock<ConsumeContext<SalarySubmittedEvent>>();
         consumeContext.Setup(c => c.Message).Returns(message);
 
@@ -40,13 +41,13 @@ public class AnalyticsConsumerTests
 
         // Assert
         var average = await context.CityAverages
-            .FirstOrDefaultAsync(ca => ca.City == "Berlin" && ca.Stack == "C#");
+            .FirstOrDefaultAsync(ca => ca.City == "Berlin" && ca.Stack == "C#" && ca.Level == "Middle");
         Assert.NotNull(average);
         Assert.Equal(100000m, average!.AverageSalary);
         Assert.Equal(1, average.SampleSize);
         
         // Verify cache was called
-        cacheMock.Verify(c => c.SetCachedAverageAsync("Berlin", "C#", 100000m), Times.Once);
+        cacheMock.Verify(c => c.SetCachedAverageAsync("Berlin:Middle", "C#", 100000m), Times.Once);
     }
 
     [Fact]
@@ -58,13 +59,13 @@ public class AnalyticsConsumerTests
         var consumer = new SalarySubmittedConsumer(context, cacheMock.Object);
 
         context.SalaryEntries.AddRange(
-            new SalaryEntry("C#", 100000, "Berlin", 52.52, 13.40),
-            new SalaryEntry("C#", 120000, "Berlin", 52.52, 13.40),
-            new SalaryEntry("C#", 110000, "Berlin", 52.52, 13.40)
+            new SalaryEntry("C#", 100000, "Berlin", 52.52, 13.40, "Middle"),
+            new SalaryEntry("C#", 120000, "Berlin", 52.52, 13.40, "Middle"),
+            new SalaryEntry("C#", 110000, "Berlin", 52.52, 13.40, "Middle")
         );
         await context.SaveChangesAsync();
 
-        var message = new SalarySubmittedEvent(Guid.NewGuid(), "C#", 110000, "Berlin", DateTime.UtcNow);
+        var message = new SalarySubmittedEvent(Guid.NewGuid(), "C#", 110000, "Berlin", "Middle", DateTime.UtcNow);
         var consumeContext = new Mock<ConsumeContext<SalarySubmittedEvent>>();
         consumeContext.Setup(c => c.Message).Returns(message);
 
@@ -73,12 +74,12 @@ public class AnalyticsConsumerTests
 
         // Assert
         var average = await context.CityAverages
-            .FirstOrDefaultAsync(ca => ca.City == "Berlin" && ca.Stack == "C#");
+            .FirstOrDefaultAsync(ca => ca.City == "Berlin" && ca.Stack == "C#" && ca.Level == "Middle");
         Assert.NotNull(average);
         Assert.Equal(110000m, average!.AverageSalary);
         Assert.Equal(3, average.SampleSize);
         
         // Verify cache was updated
-        cacheMock.Verify(c => c.SetCachedAverageAsync("Berlin", "C#", 110000m), Times.Once);
+        cacheMock.Verify(c => c.SetCachedAverageAsync("Berlin:Middle", "C#", 110000m), Times.Once);
     }
 }

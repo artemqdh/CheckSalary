@@ -37,7 +37,8 @@ public class SalaryController : ControllerBase
             request.Amount,
             request.City,
             request.Latitude,
-            request.Longitude);
+            request.Longitude,
+            request.Level);
 
         entry.SetNormalizedStack(normalized.Normalized);
 
@@ -50,6 +51,7 @@ public class SalaryController : ControllerBase
             entry.StackRaw,
             entry.Amount,
             entry.City,
+            entry.Level,
             entry.CreatedAt));
 
         return Ok(new

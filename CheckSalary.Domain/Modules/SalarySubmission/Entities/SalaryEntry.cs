@@ -11,11 +11,12 @@ namespace CheckSalary.Domain.Modules.SalarySubmission.Entities
         public string City { get; private set; }
         public double Latitude { get; private set; }
         public double Longitude { get; private set; }
+        public string Level { get; private set; } // Junior, Middle, Senior
         public DateTime CreatedAt { get; private set; }
 
         private SalaryEntry() { }
 
-        public SalaryEntry(string stackRaw, decimal amount, string city, double latitude, double longitude)
+        public SalaryEntry(string stackRaw, decimal amount, string city, double latitude, double longitude, string level)
         {
             Id = Guid.NewGuid();
             StackRaw = stackRaw;
@@ -23,6 +24,7 @@ namespace CheckSalary.Domain.Modules.SalarySubmission.Entities
             City = city;
             Latitude = latitude;
             Longitude = longitude;
+            Level = level;
             CreatedAt = DateTime.UtcNow;
         }
 

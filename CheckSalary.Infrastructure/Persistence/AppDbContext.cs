@@ -25,6 +25,8 @@ public class AppDbContext : DbContext
             entity.Property(e => e.Latitude).IsRequired();
             entity.Property(e => e.Longitude).IsRequired();
 
+            entity.Property(e => e.Level).IsRequired().HasMaxLength(50);
+            
             // Index on City + Stack for fast lookups
             entity.HasIndex(e => new { e.City, e.StackNormalized });
         });
@@ -32,7 +34,8 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<CityAverage>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.HasIndex(e => new { e.City, e.Stack }).IsUnique();
+            entity.HasIndex(e => new { e.City, e.Stack, e.Level }).IsUnique();
+            entity.Property(e => e.Level).IsRequired().HasMaxLength(50);
             entity.Property(e => e.AverageSalary).HasPrecision(18, 2);
             entity.Property(e => e.City).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Stack).IsRequired().HasMaxLength(200);

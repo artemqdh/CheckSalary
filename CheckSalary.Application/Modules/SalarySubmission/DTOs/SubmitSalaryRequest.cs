@@ -3,6 +3,7 @@
     public class SubmitSalaryRequest
     {
         public string Stack { get; set; } = string.Empty;
+        public string Level { get; set; } = string.Empty;
         public decimal Amount { get; set; }
         public string City { get; set; } = string.Empty;
         public double Latitude { get; set; }

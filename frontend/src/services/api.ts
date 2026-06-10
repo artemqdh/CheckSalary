@@ -5,21 +5,23 @@ const api = axios.create({
 });
 
 export interface SubmitSalaryRequest {
-  stack: string;
-  amount: number;
-  city: string;
-  latitude: number;
-  longitude: number;
+    stack: string;
+    amount: number;
+    city: string;
+    latitude: number;
+    longitude: number;
+    level: string;
 }
 
 export interface GeoSearchResult {
-  city: string;
-  stack: string;
-  averageSalary: number;
-  sampleSize: number;
-  distanceKm: number;
-  latitude: number;
-  longitude: number;
+    city: string;
+    stack: string;
+    level: string;
+    averageSalary: number;
+    sampleSize: number;
+    distanceKm: number;
+    latitude: number;
+    longitude: number;
 }
 
 export interface OverviewStats {

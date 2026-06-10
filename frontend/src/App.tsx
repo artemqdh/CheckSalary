@@ -11,6 +11,7 @@ function App() {
   const [city, setCity] = useState('');
   const [lat, setLat] = useState('52.52');
   const [lng, setLng] = useState('13.40');
+  const [level, setLevel] = useState('Middle');
   const [radiusKm, setRadiusKm] = useState('50');
   const [message, setMessage] = useState('');
   const [results, setResults] = useState<GeoSearchResult[]>([]);
@@ -40,12 +41,13 @@ function App() {
         }
       }
 
-      const res = await submitSalary({
+      await submitSalary({
         stack,
         amount: Number(amount),
         city,
         latitude: Number(lat),
         longitude: Number(lng),
+          level,
       });
       
       setMessage(
@@ -148,6 +150,16 @@ function App() {
               onChange={e => setStack(e.target.value)}
               required
             />
+
+              <select
+                  className="w-full p-2 mb-3 rounded bg-gray-700 border border-gray-600"
+                  value={level}
+                  onChange={e => setLevel(e.target.value)}
+              >
+                  <option value="Junior">Junior</option>
+                  <option value="Middle">Middle</option>
+                  <option value="Senior">Senior</option>
+              </select>
 
             <input
               className="w-full p-2 mb-3 rounded bg-gray-700 border border-gray-600"
@@ -281,7 +293,7 @@ function App() {
                   {results.map((r, i) => (
                     <div key={i} className="bg-gray-800 p-4 rounded-lg flex justify-between items-center">
                       <div>
-                        <p className="font-semibold">{r.city} — {r.stack}</p>
+                          <p className="font-semibold">{r.city} — {r.stack} ({r.level})</p>
                         <p className="text-sm text-gray-400">Samples: {r.sampleSize} | Distance: {r.distanceKm.toFixed(1)} km</p>
                       </div>
                       <p className="text-xl font-bold text-green-400">{r.averageSalary.toLocaleString()} ₽</p>

@@ -13,6 +13,7 @@
     public record GeoSearchResult(
         string City,
         string Stack,
+        string Level,
         decimal AverageSalary,
         int SampleSize,
         double DistanceKm,
