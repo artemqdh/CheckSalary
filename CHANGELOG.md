@@ -4,6 +4,13 @@ All notable changes to the CheckSalary project.
 
 ---
 
+## v0.9.0 - 10.06.2026
+
+### Added
+- Level field (Junior/Middle/Senior) in every file
+
+---
+
 ## v0.8.1 - 04.06.2026
 
 ### Added
