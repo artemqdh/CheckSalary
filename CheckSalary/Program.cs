@@ -8,6 +8,7 @@ using CheckSalary.Infrastructure.GIS;
 using CheckSalary.Infrastructure.Messaging;
 using CheckSalary.Infrastructure.Persistence;
 using MassTransit;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
@@ -19,8 +20,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(
-        builder.Configuration.GetConnectionString("Postgres"),
-        x => x.UseNetTopologySuite())); // PostGIS
+        builder.Configuration.GetConnectionString("Postgres") ?? "Host=localhost;Database=checksalary;Username=admin;Password=password123",
+        x => x.UseNetTopologySuite()));
 
 builder.Services.AddMassTransit(x =>
 {
@@ -28,62 +29,62 @@ builder.Services.AddMassTransit(x =>
 
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", "/", h =>
+        var rabbitConnection = builder.Configuration.GetConnectionString("RabbitMQ") ?? "rabbitmq://localhost";
+        cfg.Host(new Uri(rabbitConnection), "/", h =>
         {
             h.Username("guest");
             h.Password("guest");
         });
-
         cfg.ReceiveEndpoint("salary-submitted-queue", e =>
-        {
-            e.ConfigureConsumer<SalarySubmittedConsumer>(context);
-        });
+                {
+                    e.ConfigureConsumer<SalarySubmittedConsumer>(context);
+                });
     });
 });
 
+var jaegerEndpoint = builder.Configuration["Jaeger:Endpoint"] ?? "http://localhost:4317";
 builder.Services.AddOpenTelemetry()
     .WithTracing(t => t
         .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("CheckSalary"))
         .AddAspNetCoreInstrumentation()
         .AddSource("MassTransit")
-        .AddOtlpExporter(o => o.Endpoint = new Uri("http://localhost:4317")));
+        .AddOtlpExporter(o => o.Endpoint = new Uri(jaegerEndpoint)));
 
-// Redis
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = "localhost:6379";
+    options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
 });
 
 builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("submit-policy", config =>
     {
-        config.PermitLimit = 5;              // 5 requests
-        config.Window = TimeSpan.FromMinutes(1); // per 1 minute
+        config.PermitLimit = 5;
+        config.Window = TimeSpan.FromMinutes(1);
         config.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
-        config.QueueLimit = 0;               // no queueing, just reject
+        config.QueueLimit = 0;
     });
-
-    options.RejectionStatusCode = 429;       // when too many requests
+    options.RejectionStatusCode = 429;
 });
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("Postgres")!)
-    .AddRedis("localhost:6379")
+    .AddRedis(builder.Configuration.GetConnectionString("Redis")!)
     .AddCheck("redis_circuit", () =>
     {
         if (RedisCacheService.IsCircuitOpen)
-            return HealthCheckResult.Degraded("Redis circuit is OPEN � using fallback");
-        return HealthCheckResult.Healthy("Redis circuit closed � normal operation");
+            return HealthCheckResult.Degraded("Redis circuit is OPEN - using fallback");
+        return HealthCheckResult.Healthy("Redis circuit closed - normal operation");
     });
 
 builder.Services.AddScoped<ISalaryRepository, SalaryRepository>();
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
 builder.Services.AddScoped<IGeoSearchService, PostgisGeoService>();
 
+var ollamaUrl = builder.Configuration["Ollama:BaseUrl"] ?? "http://localhost:11434";
 builder.Services.AddHttpClient<IStackNormalizer, OllamaStackNormalizer>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:11434");
+    client.BaseAddress = new Uri(ollamaUrl);
 });
 
 builder.Services.AddControllers();
@@ -110,12 +111,12 @@ app.UseHttpsRedirection();
 app.UseRateLimiter();
 app.MapControllers();
 
-app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+app.MapHealthChecks("/health", new HealthCheckOptions
 {
+    AllowCachingResponses = false,
     ResponseWriter = async (context, report) =>
     {
         context.Response.ContentType = "application/json";
-
         var result = System.Text.Json.JsonSerializer.Serialize(new
         {
             status = report.Status.ToString(),
@@ -126,12 +127,10 @@ app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks
                 description = e.Value.Description
             })
         });
-
         await context.Response.WriteAsync(result);
     }
 });
 
 app.Run();
 
-// Make Program accessible to integration tests
 public partial class Program { }

@@ -7,18 +7,12 @@ interface Props {
   results: GeoSearchResult[];
 }
 
-// Custom marker colors
-const getMarkerColor = (index: number) => {
-  const colors = ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b'];
-  return colors[index % colors.length];
-};
-
 export default function SearchMap({ center, radiusKm, results }: Props) {
   return (
     <MapContainer
       center={center}
       zoom={9}
-      style={{ height: '400px', width: '100%', borderRadius: '0.5rem' }}
+      style={{ height: '400px', width: '100%', borderRadius: '0.5rem', zIndex: 0 }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

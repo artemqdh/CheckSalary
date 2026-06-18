@@ -6,11 +6,28 @@ services:
       POSTGRES_DB: checksalary
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password123
-      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: CheckSalary/Dockerfile
+    container_name: checksalary-api
+    ports:
+      - "5067:5067"
+    environment:
+      - ConnectionStrings__Postgres=Host=postgres;Port=5432;Database=checksalary;Username=admin;Password=password123
+      - ConnectionStrings__Redis=redis:6379
+      - ConnectionStrings__RabbitMQ=rabbitmq://rabbitmq
+      - Jaeger__Endpoint=http://jaeger:4317
+      - Ollama__BaseUrl=http://host.docker.internal:11434
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
 
   redis:
     image: redis:7-alpine
