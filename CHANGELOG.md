@@ -4,6 +4,14 @@ All notable changes to the CheckSalary project.
 
 ---
 
+## v.10.0 - 18.06.2026
+
+### Added
+- Backend Api to Docker container
+- A Few changes in frontend GUI
+
+---
+
 ## v0.9.0 - 10.06.2026
 
 ### Added
