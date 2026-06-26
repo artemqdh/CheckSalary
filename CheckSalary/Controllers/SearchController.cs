@@ -36,20 +36,16 @@ public class SearchController : ControllerBase
         if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
             return Ok(Array.Empty<object>());
 
-        var sql = @"
-            SELECT DISTINCT ""City""
-            FROM ""SalaryEntries""
-            WHERE LOWER(""City"") LIKE LOWER(@query)
-            ORDER BY ""City""
-            LIMIT 10";
-
-        var parameters = new Npgsql.NpgsqlParameter[]
-        {
-            new("query", $"%{q}%")
-        };
-
-        var cities = await _context.Database
-            .SqlQueryRaw<string>(sql, parameters)
+        var cities = await _context.Cities
+            .Where(c => EF.Functions.ILike(c.Name, $"%{q}%"))
+            .OrderBy(c => c.Name)
+            .Take(10)
+            .Select(c => new
+            {
+                c.Name,
+                c.Latitude,
+                c.Longitude
+            })
             .ToListAsync();
 
         return Ok(cities);

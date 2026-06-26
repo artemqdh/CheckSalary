@@ -42,6 +42,12 @@ export interface StackStat {
   sampleSize: number;
 }
 
+export interface CitySuggestion {
+    name: string;
+    latitude: number;
+    longitude: number;
+}
+
 export const normalizeStack = (stack: string) =>
   api.post('/salary/normalize', { stack });
 

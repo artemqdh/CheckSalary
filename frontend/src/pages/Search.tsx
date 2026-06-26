@@ -1,19 +1,20 @@
 import { useState } from 'react';
-import { searchByRadius } from '../services/api';
-import type { GeoSearchResult } from '../services/api';
+import { searchByRadius, autocompleteCity } from '../services/api';
+import type { GeoSearchResult, CitySuggestion } from '../services/api';
 import SearchMap from '../components/SearchMap';
 
 interface Props {
     isDark: boolean;
 }
 
-export default function Search({ isDark }: Props)
-{
+export default function Search({ isDark }: Props) {
     const [stack, setStack] = useState('');
-    const [lat, setLat] = useState('52.52');
-    const [lng, setLng] = useState('13.40');
+    const [city, setCity] = useState('');
+    const [lat, setLat] = useState<number | null>(null);
+    const [lng, setLng] = useState<number | null>(null);
     const [radiusKm, setRadiusKm] = useState('50');
     const [results, setResults] = useState<GeoSearchResult[]>([]);
+    const [citySuggestions, setCitySuggestions] = useState<CitySuggestion[]>([]);
     const [searching, setSearching] = useState(false);
     const [searched, setSearched] = useState(false);
 
@@ -22,9 +23,10 @@ export default function Search({ isDark }: Props)
     const subText = isDark ? 'text-gray-400' : 'text-gray-500';
 
     const handleSearch = async () => {
+        if (lat === null || lng === null) return;
         setSearching(true); setSearched(false);
         try {
-            const res = await searchByRadius({ lat: Number(lat), lng: Number(lng), radiusKm: Number(radiusKm), stack: stack || undefined });
+            const res = await searchByRadius({ lat, lng, radiusKm: Number(radiusKm), stack: stack || undefined });
             setResults(res.data.results || []); setSearched(true);
         } catch {
             setResults([]); setSearched(true);
@@ -33,20 +35,54 @@ export default function Search({ isDark }: Props)
         }
     };
 
+    const handleCityInput = async (value: string) => {
+        setCity(value);
+        setLat(null);
+        setLng(null);
+        if (value.length >= 2) {
+            const res = await autocompleteCity(value);
+            setCitySuggestions(res.data);
+        } else {
+            setCitySuggestions([]);
+        }
+    };
+
+    const selectCity = (suggestion: CitySuggestion) => {
+        setCity(suggestion.name);
+        setLat(suggestion.latitude);
+        setLng(suggestion.longitude);
+        setCitySuggestions([]);
+    };
+
     return (
         <div className="w-screen relative left-1/2 right-1/2 -mx-[50vw]">
             <div className="max-w-6xl mx-auto px-4">
                 <div className={`${card} p-6 rounded-lg mb-6`}>
                     <h2 className="text-xl font-semibold mb-4">Search by Radius</h2>
+
                     <div className="flex gap-3 mb-3">
                         <input className={`flex-1 p-2 rounded border ${input}`} placeholder="Stack (optional)" value={stack} onChange={e => setStack(e.target.value)} />
                         <input className={`w-32 p-2 rounded border ${input}`} type="number" placeholder="Radius km" value={radiusKm} onChange={e => setRadiusKm(e.target.value)} />
                     </div>
-                    <div className="flex gap-3 mb-3">
-                        <input className={`flex-1 p-2 rounded border ${input}`} type="number" step="any" placeholder="Latitude" value={lat} onChange={e => setLat(e.target.value)} />
-                        <input className={`flex-1 p-2 rounded border ${input}`} type="number" step="any" placeholder="Longitude" value={lng} onChange={e => setLng(e.target.value)} />
+
+                    <div className="relative mb-3">
+                        <input className={`w-full p-2 rounded border ${input}`} placeholder="City" value={city} onChange={e => handleCityInput(e.target.value)} />
+                        {citySuggestions.length > 0 && (
+                            <div className={`absolute z-10 w-full rounded-b border ${isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}>
+                                {citySuggestions.map(c => (
+                                    <div key={c.name} className={`p-2 cursor-pointer ${isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-100'}`} onClick={() => selectCity(c)}>
+                                        {c.name}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
-                    <button onClick={handleSearch} className="w-full bg-purple-600 hover:bg-purple-700 p-2 rounded font-semibold">
+
+                    {lat !== null && lng !== null && (
+                        <p className={`text-xs mb-3 ${subText}`}>📍 {lat.toFixed(4)}, {lng.toFixed(4)}</p>
+                    )}
+
+                    <button onClick={handleSearch} className="w-full bg-purple-600 hover:bg-purple-700 p-2 rounded font-semibold" disabled={lat === null}>
                         Search within {radiusKm}km
                     </button>
                 </div>
@@ -55,7 +91,7 @@ export default function Search({ isDark }: Props)
 
                 {!searching && results.length > 0 && (
                     <div className="space-y-4">
-                        <SearchMap center={[Number(lat), Number(lng)]} radiusKm={Number(radiusKm)} results={results} />
+                        <SearchMap center={[lat!, lng!]} radiusKm={Number(radiusKm)} results={results} />
                         <div className="space-y-3">
                             {results.map((r, i) => (
                                 <div key={i} className={`${card} p-4 rounded-lg flex justify-between items-center`}>

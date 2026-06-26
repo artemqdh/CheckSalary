@@ -1,20 +1,20 @@
 import { useState } from 'react';
 import { submitSalary, autocompleteCity, normalizeStack } from '../services/api';
+import type { CitySuggestion } from '../services/api';
 
 interface Props {
     isDark: boolean;
 }
 
-export default function Submit({ isDark }: Props)
-{
+export default function Submit({ isDark }: Props) {
     const [stack, setStack] = useState('');
     const [amount, setAmount] = useState('');
     const [city, setCity] = useState('');
-    const [lat, setLat] = useState('52.52');
-    const [lng, setLng] = useState('13.40');
+    const [lat, setLat] = useState<number | null>(null);
+    const [lng, setLng] = useState<number | null>(null);
     const [level, setLevel] = useState('Middle');
     const [message, setMessage] = useState('');
-    const [citySuggestions, setCitySuggestions] = useState<string[]>([]);
+    const [citySuggestions, setCitySuggestions] = useState<CitySuggestion[]>([]);
     const [submitting, setSubmitting] = useState(false);
     const [useAI, setUseAI] = useState(false);
 
@@ -24,6 +24,11 @@ export default function Submit({ isDark }: Props)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (lat === null || lng === null) {
+            setMessage('Please select a city from the dropdown');
+            setTimeout(() => setMessage(''), 5000);
+            return;
+        }
         setSubmitting(true);
         setMessage('');
         try {
@@ -39,9 +44,9 @@ export default function Submit({ isDark }: Props)
                     confidence = 0.5;
                 }
             }
-            await submitSalary({ stack, amount: Number(amount), city, latitude: Number(lat), longitude: Number(lng), level });
+            await submitSalary({ stack, amount: Number(amount), city, latitude: lat, longitude: lng, level });
             setMessage(useAI ? `Submitted! "${stack}" → "${normalizedStack}" (${(confidence * 100).toFixed(0)}%)` : `Submitted! "${stack}"`);
-            setStack(''); setAmount(''); setCity('');
+            setStack(''); setAmount(''); setCity(''); setLat(null); setLng(null);
             setTimeout(() => setMessage(''), 5000);
         } catch {
             setMessage('Error submitting salary');
@@ -53,6 +58,8 @@ export default function Submit({ isDark }: Props)
 
     const handleCityInput = async (value: string) => {
         setCity(value);
+        setLat(null);
+        setLng(null);
         if (value.length >= 2) {
             const res = await autocompleteCity(value);
             setCitySuggestions(res.data);
@@ -61,40 +68,56 @@ export default function Submit({ isDark }: Props)
         }
     };
 
+    const selectCity = (suggestion: CitySuggestion) => {
+        setCity(suggestion.name);
+        setLat(suggestion.latitude);
+        setLng(suggestion.longitude);
+        setCitySuggestions([]);
+    };
+
     return (
         <form onSubmit={handleSubmit} className={`${card} p-6 rounded-lg mb-8 max-w-md mx-auto`}>
             <h2 className="text-xl font-semibold mb-4">Submit Salary</h2>
+
             <label className="flex items-center gap-2 mb-3 text-sm cursor-pointer">
                 <input type="checkbox" checked={useAI} onChange={e => setUseAI(e.target.checked)} className="w-4 h-4 rounded accent-blue-600" />
                 <span className={subText}>Use AI to normalize stack name</span>
                 <span className={isDark ? 'text-gray-500' : 'text-gray-400'}>({useAI ? 'AI enabled' : 'using exact input'})</span>
             </label>
+
             <input className={`w-full p-2 mb-3 rounded border ${input}`} placeholder="Stack (e.g. C-Sharp)" value={stack} onChange={e => setStack(e.target.value)} required />
+
             <select className={`w-full p-2 mb-3 rounded border ${input}`} value={level} onChange={e => setLevel(e.target.value)}>
                 <option value="Junior">Junior</option>
                 <option value="Middle">Middle</option>
                 <option value="Senior">Senior</option>
             </select>
+
             <input className={`w-full p-2 mb-3 rounded border ${input}`} type="number" placeholder="Amount (₽)" value={amount} onChange={e => setAmount(e.target.value)} required />
-            <div className="relative">
-                <input className={`w-full p-2 mb-3 rounded border ${input}`} placeholder="City" value={city} onChange={e => handleCityInput(e.target.value)} required />
+
+            <div className="relative mb-3">
+                <input className={`w-full p-2 rounded border ${input}`} placeholder="City" value={city} onChange={e => handleCityInput(e.target.value)} required />
                 {citySuggestions.length > 0 && (
                     <div className={`absolute z-10 w-full rounded-b border ${isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}>
                         {citySuggestions.map(c => (
-                            <div key={c} className={`p-2 cursor-pointer ${isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-100'}`} onClick={() => { setCity(c); setCitySuggestions([]); }}>{c}</div>
+                            <div key={c.name} className={`p-2 cursor-pointer ${isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-100'}`} onClick={() => selectCity(c)}>
+                                {c.name}
+                            </div>
                         ))}
                     </div>
                 )}
             </div>
-            <div className="flex gap-3 mb-3">
-                <input className={`w-1/2 p-2 rounded border ${input}`} type="number" step="any" placeholder="Latitude" value={lat} onChange={e => setLat(e.target.value)} />
-                <input className={`w-1/2 p-2 rounded border ${input}`} type="number" step="any" placeholder="Longitude" value={lng} onChange={e => setLng(e.target.value)} />
-            </div>
+
+            {lat !== null && lng !== null && (
+                <p className={`text-xs mb-3 ${subText}`}>📍 {lat.toFixed(4)}, {lng.toFixed(4)}</p>
+            )}
+
             <button className="w-full bg-blue-600 hover:bg-blue-700 p-2 rounded font-semibold disabled:opacity-50 disabled:cursor-not-allowed" type="submit" disabled={submitting}>
                 {submitting ? 'Submitting...' : 'Submit'}
             </button>
+
             {message && (
-                <p className={`mt-3 text-sm p-2 rounded ${message.startsWith('Error') ? 'bg-red-900 text-red-300' : 'bg-green-900 text-green-300'}`}>
+                <p className={`mt-3 text-sm p-2 rounded ${message.startsWith('Error') || message.startsWith('Please') ? 'bg-red-900 text-red-300' : 'bg-green-900 text-green-300'}`}>
                     {message}
                 </p>
             )}
