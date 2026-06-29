@@ -4,6 +4,29 @@ All notable changes to the CheckSalary project.
 
 ---
 
+## v0.12.0 - 29.06.2026
+
+### Added
+- Age, WorkExperience, and CompanySize fields to salary submissions
+- Optional employee fields displayed in search results (averages)
+- Age input restricted to 16+ years
+- Company size dropdown (1-10, 11-50, 51-200, 201-500, 500+)
+
+### Changed
+- Search map attribution bar styled for clean appearance
+
+---
+
+## v0.11.0 - 26.06.2026
+
+### Added
+- Cities table with seed data (20 major European cities)
+- City autocomplete replaces lat/lng inputs in Submit and Search
+- Landing page with feature overview cards
+- Frontend code organized into pages/ directory
+
+---
+
 ## v.10.0 - 18.06.2026
 
 ### Added
