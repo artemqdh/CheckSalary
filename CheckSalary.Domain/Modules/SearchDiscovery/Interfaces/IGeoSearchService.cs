@@ -18,6 +18,9 @@
         int SampleSize,
         double DistanceKm,
         double Latitude,
-        double Longitude
+        double Longitude,
+        double? AvgWorkExperience,
+        double? AvgAge,
+        double? AvgCompanySize
     );
 }

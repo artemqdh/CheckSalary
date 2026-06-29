@@ -6,6 +6,9 @@
         decimal Amount,
         string City,
         string Level,
+        int WorkExperience,
+        int? Age,
+        int? CompanySize,
         DateTime SubmittedAt
     );
 }

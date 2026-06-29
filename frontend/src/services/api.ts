@@ -11,6 +11,9 @@ export interface SubmitSalaryRequest {
     latitude: number;
     longitude: number;
     level: string;
+    workExperience: number;
+    age?: number;
+    companySize?: number;
 }
 
 export interface GeoSearchResult {
@@ -22,6 +25,9 @@ export interface GeoSearchResult {
     distanceKm: number;
     latitude: number;
     longitude: number;
+    avgWorkExperience?: number;
+    avgAge?: number;
+    avgCompanySize?: number;
 }
 
 export interface OverviewStats {

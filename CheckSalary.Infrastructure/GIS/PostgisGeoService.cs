@@ -30,7 +30,10 @@ public class PostgisGeoService : IGeoSearchService
         COUNT(*) AS ""SampleSize"",
         MIN(""DistanceKm"") AS ""DistanceKm"",
         AVG(""Latitude"") AS ""Latitude"",
-        AVG(""Longitude"") AS ""Longitude""
+        AVG(""Longitude"") AS ""Longitude"",
+        AVG(""WorkExperience"") AS ""AvgWorkExperience"",
+        AVG(""Age"") AS ""AvgAge"",
+        AVG(""CompanySize"") AS ""AvgCompanySize""
     FROM (
         SELECT 
             ""City"",
@@ -39,6 +42,9 @@ public class PostgisGeoService : IGeoSearchService
             ""Amount"",
             ""Latitude"",
             ""Longitude"",
+            ""WorkExperience"",
+            ""Age"",
+            ""CompanySize"",
             ST_Distance(
                 ""Location"",
                 ST_SetSRID(ST_MakePoint(@lng, @lat), 4326)::geography
@@ -83,7 +89,10 @@ public class PostgisGeoService : IGeoSearchService
             r.SampleSize,
             r.DistanceKm,
             r.Latitude,
-            r.Longitude
+            r.Longitude,
+            r.AvgWorkExperience,
+            r.AvgAge,
+            r.AvgCompanySize
         )).ToList();
     }
 
@@ -97,5 +106,8 @@ public class PostgisGeoService : IGeoSearchService
         public double DistanceKm { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }
+        public double? AvgWorkExperience { get; set; }
+        public double? AvgAge { get; set; }
+        public double? AvgCompanySize { get; set; }
     }
 }

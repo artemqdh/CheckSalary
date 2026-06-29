@@ -29,6 +29,10 @@ public class AppDbContext : DbContext
 
             entity.Property(e => e.Level).IsRequired().HasMaxLength(50);
             
+            entity.Property(e => e.WorkExperience).IsRequired();
+            entity.Property(e => e.Age).IsRequired(false);
+            entity.Property(e => e.CompanySize).IsRequired(false);
+            
             // Index on City + Stack for fast lookups
             entity.HasIndex(e => new { e.City, e.StackNormalized });
         });

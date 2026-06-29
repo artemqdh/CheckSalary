@@ -94,10 +94,19 @@ export default function Search({ isDark }: Props) {
                         <SearchMap center={[lat!, lng!]} radiusKm={Number(radiusKm)} results={results} />
                         <div className="space-y-3">
                             {results.map((r, i) => (
-                                <div key={i} className={`${card} p-4 rounded-lg flex justify-between items-center`}>
+                                <div key={i} className={`${card} p-4 rounded-lg flex justify-between items-start`}>
                                     <div>
                                         <p className="font-semibold">{r.city} — {r.stack} ({r.level})</p>
-                                        <p className={`text-sm ${subText}`}>Samples: {r.sampleSize} | Distance: {r.distanceKm.toFixed(1)} km</p>
+                                        <p className={`text-sm ${subText}`}>
+                                            Samples: {r.sampleSize} | Distance: {r.distanceKm.toFixed(1)} km
+                                        </p>
+                                        {(r.avgWorkExperience || r.avgAge || r.avgCompanySize) && (
+                                            <p className={`text-xs mt-1 ${subText}`}>
+                                                {r.avgWorkExperience && `🛠 ${r.avgWorkExperience}y exp`}
+                                                {r.avgAge && ` · 🎂 ~${r.avgAge}y`}
+                                                {r.avgCompanySize && ` · 🏢 ~${r.avgCompanySize} emp`}
+                                            </p>
+                                        )}
                                     </div>
                                     <p className="text-xl font-bold text-green-400">{r.averageSalary.toLocaleString()} ₽</p>
                                 </div>
