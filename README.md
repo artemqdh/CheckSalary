@@ -32,6 +32,22 @@
 
 ---
 
+## 📸 Screenshots
+
+### Landing Page
+![Landing Page](screenshots/WelcomePage.png)
+
+### Submit Salary
+![Submit Salary](screenshots/SubmitPage.png)
+
+### Search by Radius
+![Search by Radius](screenshots/SearchPage.png)
+
+### Dashboard
+![Dashboard](screenshots/DashboardPage.png)
+
+---
+
 ## 🏗️ Architecture
 
 **Clean Architecture Modular Monolith** with 4 layers and event-driven module communication.
