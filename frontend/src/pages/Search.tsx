@@ -39,12 +39,20 @@ export default function Search({ isDark }: Props) {
         setCity(value);
         setLat(null);
         setLng(null);
+        setResults([]);
+        setSearched(false);
         if (value.length >= 2) {
             const res = await autocompleteCity(value);
             setCitySuggestions(res.data);
         } else {
             setCitySuggestions([]);
         }
+    };
+
+    const handleRadiusChange = (value: string) => {
+        setRadiusKm(value);
+        setResults([]);
+        setSearched(false);
     };
 
     const selectCity = (suggestion: CitySuggestion) => {
@@ -62,7 +70,7 @@ export default function Search({ isDark }: Props) {
 
                     <div className="flex gap-3 mb-3">
                         <input className={`flex-1 p-2 rounded border ${input}`} placeholder="Stack (optional)" value={stack} onChange={e => setStack(e.target.value)} />
-                        <input className={`w-32 p-2 rounded border ${input}`} type="number" placeholder="Radius km" value={radiusKm} onChange={e => setRadiusKm(e.target.value)} />
+                        <input className={`w-32 p-2 rounded border ${input}`} type="number" placeholder="Radius km" value={radiusKm} onChange={e => handleRadiusChange(e.target.value)} />
                     </div>
 
                     <div className="relative mb-3">

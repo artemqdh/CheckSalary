@@ -22,8 +22,7 @@ public class AppDbContext : DbContext
             entity.Property(e => e.StackNormalized).HasMaxLength(200);
             entity.Property(e => e.Amount).HasPrecision(18, 2);
             entity.Property(e => e.City).IsRequired().HasMaxLength(200);
-
-            // Store Latitude and Longitude
+            
             entity.Property(e => e.Latitude).IsRequired();
             entity.Property(e => e.Longitude).IsRequired();
 
@@ -33,7 +32,6 @@ public class AppDbContext : DbContext
             entity.Property(e => e.Age).IsRequired(false);
             entity.Property(e => e.CompanySize).IsRequired(false);
             
-            // Index on City + Stack for fast lookups
             entity.HasIndex(e => new { e.City, e.StackNormalized });
         });
 

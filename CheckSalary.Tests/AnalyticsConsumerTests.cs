@@ -22,7 +22,6 @@ public class AnalyticsConsumerTests
     [Fact]
     public async Task Consume_FirstSalary_CreatesCityAverage()
     {
-        // Arrange
         var context = CreateContext();
         var cacheMock = new Mock<ICacheService>();
         var consumer = new SalarySubmittedConsumer(context, cacheMock.Object);
@@ -35,11 +34,9 @@ public class AnalyticsConsumerTests
         
         var consumeContext = new Mock<ConsumeContext<SalarySubmittedEvent>>();
         consumeContext.Setup(c => c.Message).Returns(message);
-
-        // Act
+        
         await consumer.Consume(consumeContext.Object);
-
-        // Assert
+        
         var average = await context.CityAverages
             .FirstOrDefaultAsync(ca => ca.City == "Berlin" && ca.Stack == "C#" && ca.Level == "Middle");
         Assert.NotNull(average);
@@ -52,7 +49,6 @@ public class AnalyticsConsumerTests
     [Fact]
     public async Task Consume_MultipleSalaries_UpdatesAverage()
     {
-        // Arrange
         var context = CreateContext();
         var cacheMock = new Mock<ICacheService>();
         var consumer = new SalarySubmittedConsumer(context, cacheMock.Object);
@@ -67,11 +63,9 @@ public class AnalyticsConsumerTests
         var message = new SalarySubmittedEvent(Guid.NewGuid(), "C#", 110000, "Berlin", "Middle", 5, 30, 300, DateTime.UtcNow);
         var consumeContext = new Mock<ConsumeContext<SalarySubmittedEvent>>();
         consumeContext.Setup(c => c.Message).Returns(message);
-
-        // Act
+        
         await consumer.Consume(consumeContext.Object);
-
-        // Assert
+        
         var average = await context.CityAverages
             .FirstOrDefaultAsync(ca => ca.City == "Berlin" && ca.Stack == "C#" && ca.Level == "Middle");
         Assert.NotNull(average);

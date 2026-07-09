@@ -28,7 +28,6 @@ public class SalaryController : ControllerBase
     [EnableRateLimiting("submit-policy")]
     public async Task<IActionResult> Submit([FromBody] SubmitSalaryRequest request)
     {
-        // Normalize the stack name using Ollama AI
         var normalized = await _normalizer.NormalizeAsync(request.Stack);
         Console.WriteLine($"Raw: {request.Stack} → Normalized: {normalized.Normalized}, Confidence: {normalized.Confidence}");
 
@@ -47,8 +46,7 @@ public class SalaryController : ControllerBase
 
         await _repository.AddAsync(entry);
         await _repository.SaveChangesAsync();
-
-        // Publish event
+        
         await _publishEndpoint.Publish(new SalarySubmittedEvent(
             entry.Id,
             entry.StackRaw,

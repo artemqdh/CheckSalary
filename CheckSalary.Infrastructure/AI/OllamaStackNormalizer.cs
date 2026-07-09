@@ -61,7 +61,7 @@ public class OllamaStackNormalizer : IStackNormalizer
         }
         catch
         {
-            // Fallback on any error
+            
         }
 
         return new NormalizedStackResult(rawStack, 0.5);

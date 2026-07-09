@@ -9,8 +9,7 @@ public class RedisCacheService : ICacheService
 {
     private readonly IDistributedCache _cache;
     private static readonly AsyncCircuitBreakerPolicy _circuitBreaker;
-
-    // Track circuit state for health reporting
+    
     public static bool IsCircuitOpen => _circuitBreaker.CircuitState == CircuitState.Open;
 
     static RedisCacheService()
@@ -54,7 +53,7 @@ public class RedisCacheService : ICacheService
         catch (BrokenCircuitException)
         {
             Console.WriteLine("⚠️ Redis circuit open — returning null (cache unavailable)");
-            return null; // Fallback: cache miss, caller should check DB
+            return null;
         }
         catch
         {
@@ -81,7 +80,7 @@ public class RedisCacheService : ICacheService
         }
         catch
         {
-            // Silently fail — cache is optional
+            
         }
     }
 
@@ -96,11 +95,11 @@ public class RedisCacheService : ICacheService
         }
         catch (BrokenCircuitException)
         {
-            // Circuit open — will be stale cache, acceptable
+            // Circuit open
         }
         catch
         {
-            // Silently fail
+            
         }
     }
 }

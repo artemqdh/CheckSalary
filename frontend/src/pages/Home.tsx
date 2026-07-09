@@ -20,7 +20,7 @@ export default function Home({ isDark, onNavigate }: Props)
                 Anonymous salary comparison platform for developers. Submit your salary, search by city and tech stack, and explore data on an interactive map.
             </p>
 
-            <div className="grid grid-cols-3 gap-6 max-w-3xl mx-auto mb-12">
+            <div className="grid grid-cols-3 gap-6 max-w-3xl text-xl mx-auto mb-12">
                 {[
                     { icon: '📝', title: 'Submit', desc: 'Share your salary anonymously with AI-powered stack normalization', tab: 'submit' as const },
                     { icon: '🔍', title: 'Search', desc: 'Find salaries by radius — "C# within 50km of Berlin"', tab: 'search' as const },
@@ -29,7 +29,7 @@ export default function Home({ isDark, onNavigate }: Props)
                     <button
                         key={f.tab}
                         onClick={() => onNavigate(f.tab)}
-                        className={`${card} p-6 rounded-xl text-left hover:scale-[1.02] transition-all duration-200`}
+                        className={`${card} p-6 rounded-xl text-left hover:scale-[1.03] transition-all duration-200`}
                     >
                         <div className="text-3xl mb-3">{f.icon}</div>
                         <h3 className="font-semibold mb-1">{f.title}</h3>
@@ -38,7 +38,7 @@ export default function Home({ isDark, onNavigate }: Props)
                 ))}
             </div>
 
-            <div className={`text-sm ${subText}`}>
+            <div className={`text-xl ${subText}`}>
                 <p>Your data is anonymous. No email, no registration.</p>
             </div>
         </div>

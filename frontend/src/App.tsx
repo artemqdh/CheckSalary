@@ -20,14 +20,14 @@ function App()
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                     <button onClick={() => setTab('home')} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                         <span className="text-2xl">💰</span>
-                        <span className="text-xl font-bold">CheckSalary</span>
+                        <span className="text-3xl font-bold">CheckSalary</span>
                     </button>
                     <nav className="flex gap-1">
                         {(['submit', 'search', 'dashboard'] as const).map(t => (
                             <button
                                 key={t}
                                 onClick={() => setTab(t)}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${
+                                className={`px-4 m-4 py-2 rounded-lg text-xl font-medium capitalize transition-colors ${
                                     tab === t
                                         ? 'bg-blue-600 text-white'
                                         : isDark ? 'text-gray-400 hover:text-white hover:bg-gray-800' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
@@ -40,7 +40,7 @@ function App()
                     <select
                         value={theme}
                         onChange={e => setTheme(e.target.value as 'dark' | 'light')}
-                        className={`text-sm rounded-lg px-3 py-2 border cursor-pointer ${isDark ? 'bg-gray-800 border-gray-700 text-gray-300' : 'bg-white border-gray-300 text-gray-700'}`}
+                        className={`rounded-lg px-3 py-2 border cursor-pointer ${isDark ? 'bg-gray-800 border-gray-700 text-gray-300' : 'bg-white border-gray-300 text-gray-700'}`}
                     >
                         <option value="dark">🌙 Dark</option>
                         <option value="light">☀️ Light</option>
