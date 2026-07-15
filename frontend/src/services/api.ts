@@ -57,9 +57,12 @@ export interface CitySuggestion {
 export const normalizeStack = (stack: string) =>
   api.post('/salary/normalize', { stack });
 
-export const getOverview = () => api.get<OverviewStats>('/stats/overview');
-export const getTopCities = (stack?: string) => api.get<CityStat[]>('/stats/top-cities', { params: { stack } });
-export const getTopStacks = () => api.get<StackStat[]>('/stats/top-stacks');
+export const getOverview = (level?: string, stack?: string) =>
+    api.get<OverviewStats>('/stats/overview', { params: { level, stack } });
+export const getTopCities = (stack?: string, level?: string) =>
+    api.get<CityStat[]>('/stats/top-cities', { params: { stack, level } });
+export const getTopStacks = (level?: string, stack?: string) =>
+    api.get<StackStat[]>('/stats/top-stacks', { params: { level, stack } });
 
 export const submitSalary = (data: SubmitSalaryRequest) =>
   api.post('/salary', data);

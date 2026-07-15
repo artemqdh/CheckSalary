@@ -16,39 +16,38 @@ public class StatsController : ControllerBase
     }
 
     [HttpGet("overview")]
-    public async Task<IActionResult> GetOverview()
+    public async Task<IActionResult> GetOverview([FromQuery] string? level = null, [FromQuery] string? stack = null)
     {
-        var totalSubmissions = await _context.SalaryEntries.CountAsync();
-        var uniqueCities = await _context.SalaryEntries.Select(e => e.City).Distinct().CountAsync();
-        var uniqueStacks = await _context.SalaryEntries
+        var query = _context.SalaryEntries.AsQueryable();
+    
+        if (!string.IsNullOrWhiteSpace(level) && level != "All")
+            query = query.Where(e => e.Level == level);
+    
+        if (!string.IsNullOrWhiteSpace(stack) && stack != "All")
+            query = query.Where(e => (e.StackNormalized ?? e.StackRaw) == stack);
+
+        var totalSubmissions = await query.CountAsync();
+        var uniqueCities = await query.Select(e => e.City).Distinct().CountAsync();
+        var uniqueStacks = await query
             .Select(e => e.StackNormalized ?? e.StackRaw).Distinct().CountAsync();
 
-        return Ok(new
-        {
-            totalSubmissions,
-            uniqueCities,
-            uniqueStacks
-        });
+        return Ok(new { totalSubmissions, uniqueCities, uniqueStacks });
     }
 
     [HttpGet("top-cities")]
-    public async Task<IActionResult> GetTopCities([FromQuery] string? stack = null)
+    public async Task<IActionResult> GetTopCities([FromQuery] string? stack = null, [FromQuery] string? level = null)
     {
         var query = _context.SalaryEntries.AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(stack))
-        {
             query = query.Where(e => (e.StackNormalized ?? e.StackRaw) == stack);
-        }
+    
+        if (!string.IsNullOrWhiteSpace(level) && level != "All")
+            query = query.Where(e => e.Level == level);
 
         var cities = await query
             .GroupBy(e => e.City)
-            .Select(g => new
-            {
-                city = g.Key,
-                averageSalary = Math.Round(g.Average(e => e.Amount), 0),
-                sampleSize = g.Count()
-            })
+            .Select(g => new { city = g.Key, averageSalary = Math.Round(g.Average(e => e.Amount), 0), sampleSize = g.Count() })
             .OrderByDescending(c => c.averageSalary)
             .Take(10)
             .ToListAsync();
@@ -57,16 +56,19 @@ public class StatsController : ControllerBase
     }
 
     [HttpGet("top-stacks")]
-    public async Task<IActionResult> GetTopStacks()
+    public async Task<IActionResult> GetTopStacks([FromQuery] string? level = null, [FromQuery] string? stack = null)
     {
-        var stacks = await _context.SalaryEntries
+        var query = _context.SalaryEntries.AsQueryable();
+    
+        if (!string.IsNullOrWhiteSpace(level) && level != "All")
+            query = query.Where(e => e.Level == level);
+    
+        if (!string.IsNullOrWhiteSpace(stack) && stack != "All")
+            query = query.Where(e => (e.StackNormalized ?? e.StackRaw) == stack);
+
+        var stacks = await query
             .GroupBy(e => e.StackNormalized ?? e.StackRaw)
-            .Select(g => new
-            {
-                stack = g.Key,
-                averageSalary = Math.Round(g.Average(e => e.Amount), 0),
-                sampleSize = g.Count()
-            })
+            .Select(g => new { stack = g.Key, averageSalary = Math.Round(g.Average(e => e.Amount), 0), sampleSize = g.Count() })
             .OrderByDescending(s => s.averageSalary)
             .Take(8)
             .ToListAsync();
